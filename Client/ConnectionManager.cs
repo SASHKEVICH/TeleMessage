@@ -22,7 +22,6 @@ namespace Client
             
             await _client.ConnectAsync(new Uri($"ws://localhost:5000/{_api}"), CancellationToken.None);
             
-            Console.WriteLine("Connected To Server!");
         }
     }
 }

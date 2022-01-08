@@ -39,7 +39,7 @@
                 Grid.Row="1" Width="80" Height="40"
                 IsEnabled="{Binding CanClick}"
                 VerticalAlignment="Center" HorizontalAlignment="Center"
-                Command="{Binding CommandLoad}"
+                Command="{Binding CommandSend}"
                 Content="Send Message"
             />
         </Grid>

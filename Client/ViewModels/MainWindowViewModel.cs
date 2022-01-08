@@ -55,7 +55,10 @@ namespace Client.ViewModels
         
         private void CommandSendMessageExecute()
         {
-            _messageService.SendMessage(_messageTextToSend);
+            if (_messageTextToSend.Length != 0 || _messageTextToSend != null)
+            {
+                _messageService.SendMessage(_messageTextToSend);
+            }
         }
         
         private async void CommandReconnectExecute()
