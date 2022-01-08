@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
+using Client.Services;
 using Prism.Commands;
 using Prism.Mvvm;
 
@@ -8,20 +10,24 @@ namespace Client.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
-        private Services.IMessagesStore _messagesStore = null;
 
-        public MainWindowViewModel(Services.IMessagesStore messagesStore)
+        public MainWindowViewModel()
         {
-            _messagesStore = messagesStore;
         }
-
-        public ObservableCollection<string> Messages { get; private set; } =
-            new ObservableCollection<string>();
-
-        private string _selectedMessage;
+        
+        private DelegateCommand _commandSend;
+        private DelegateCommand _commandReconnect;
+        
         private string _messageTextToSend;
-
-        public string ConnectionStatus { get; private set; } = "You are not connected!";
+        private MessageService _messageService;
+        private string _connectionStatus = "You are not connected!";
+        private bool _canClick;
+        
+        public string ConnectionStatus
+        {
+            get => _connectionStatus;
+            set => SetProperty(ref _connectionStatus, value);
+        }
 
         public string MessageTextToSend
         {
@@ -35,58 +41,37 @@ namespace Client.ViewModels
             }
         }
 
-        public string SelectedMessage
+        public bool CanClick
         {
-            get => _selectedMessage;
-            set
-            {
-                if (SetProperty<string>(ref _selectedMessage, value))
-                {
-                    Debug.WriteLine(_selectedMessage ?? "no customer selected");
-                }
-            }
+            get => _canClick;
+            set => SetProperty(ref _canClick, value);
         }
 
-        private DelegateCommand _commandLoad;
-        private DelegateCommand _commandSend;
-        private DelegateCommand _commandReconnect;
-
-        public DelegateCommand CommandLoad =>
-            _commandLoad ??= new DelegateCommand(CommandLoadExecute);
-        
         public DelegateCommand CommandSend =>
-            _commandSend ??= new DelegateCommand(CommandSendExecute);
+            _commandSend ??= new DelegateCommand(CommandSendMessageExecute);
         
         public DelegateCommand CommandReconnect =>
             _commandReconnect ??= new DelegateCommand(CommandReconnectExecute);
-
-        private void CommandReconnectExecute()
+        
+        private void CommandSendMessageExecute()
         {
-            string api = "message";
-            var connectionManager = new ConnectionManager(api);
-            connectionManager.StartConnection().GetAwaiter().GetResult();
-
-            ConnectionStatus = "You are connected";
-        }
-
-        private void CommandSendExecute()
-        {
-            Messages.Clear();
-            List<string> list = _messagesStore.GetAll();
-            foreach (string item in list)
-            {
-                Messages.Add(item);
-            }
+            _messageService.SendMessage(_messageTextToSend);
         }
         
-        private void CommandLoadExecute()
+        private async void CommandReconnectExecute()
         {
-            Messages.Clear();
-            List<string> list = _messagesStore.GetAll();
-            foreach (string item in list)
+            try
             {
-                Messages.Add(item);
+                _messageService = new MessageService();
+                await _messageService.InitializeConnection();
             }
+            catch (System.Net.WebSockets.WebSocketException)
+            {
+                ConnectionStatus = "Server is not Online!";
+                return;
+            }
+            CanClick = true;
+            ConnectionStatus = "You are connected!";
         }
     }
 }

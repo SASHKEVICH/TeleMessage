@@ -9,6 +9,7 @@ namespace Client
     public class ConnectionManager
     {
         private readonly string _api;
+        public ClientWebSocket _client { get; private set; }
 
         public ConnectionManager(string api)
         {
@@ -17,18 +18,11 @@ namespace Client
 
         public async Task StartConnection()
         {
-            var client = new ClientWebSocket();
-            await client.ConnectAsync(new Uri($"ws://localhost:5000/{_api}"), CancellationToken.None);
-
-            var send = Task.Run(async () =>
-            {
-                string message = "Hey. I connect to you!";
-
-                var bytes = Encoding.UTF8.GetBytes(message);
-                await client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
-                    CancellationToken.None);
-                await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-            });
+            _client = new ClientWebSocket();
+            
+            await _client.ConnectAsync(new Uri($"ws://localhost:5000/{_api}"), CancellationToken.None);
+            
+            Console.WriteLine("Connected To Server!");
         }
     }
 }

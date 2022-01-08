@@ -34,7 +34,7 @@ namespace Server.SocketsManager
             {
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    await Handler.Receive(socket, result, buffer);
+                    await Handler.Reply(socket, result, buffer);
                 }
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {

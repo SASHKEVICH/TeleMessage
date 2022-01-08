@@ -50,6 +50,6 @@ namespace Server.SocketsManager
             }
         }
 
-        public abstract Task Receive(WebSocket socket, WebSocketReceiveResult result, byte[] buffer);
+        public abstract Task Reply(WebSocket socket, WebSocketReceiveResult result, byte[] buffer);
     }
 }
