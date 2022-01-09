@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using Client.Services;
+using Core;
 using Prism.Commands;
 using Prism.Mvvm;
 
@@ -57,7 +58,12 @@ namespace Client.ViewModels
         {
             if (_messageTextToSend.Length != 0 || _messageTextToSend != null)
             {
-                _messageService.SendMessage(_messageTextToSend);
+                var user = new User
+                {
+                    Name = "User2",
+                };
+                
+                _messageService.SendMessage(_messageTextToSend, user);
             }
         }
         

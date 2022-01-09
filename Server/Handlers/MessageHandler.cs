@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,11 +17,21 @@ namespace Server.Handlers
         {
         }
         
+        private readonly ConcurrentDictionary<string, WebSocket> _connectedUsers = new();
+
         public override async Task OnConnected(WebSocket socket)
         {
             await base.OnConnected(socket);
-            var socketId = ConnectionManager.GetId(socket);
-            Console.WriteLine($"Socket {socketId} connected!");
+
+            var user = new User
+            {
+                UserId = Guid.NewGuid(),
+                Name = $"User{_connectedUsers.Count}",
+            };
+
+            _connectedUsers.TryAdd(user.Name, socket);
+            
+            Console.WriteLine($"Socket {user.Name} connected!");
         }
 
         public override async Task Recieve(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
@@ -30,8 +41,9 @@ namespace Server.Handlers
             var messageString = Encoding.UTF8.GetString(buffer, 0, result.Count);
             var messageObject = JsonConvert.DeserializeObject<Message>(messageString);
 
-            var message = $"{socketId} said {messageObject.Text}";
-            Console.WriteLine(message);
+            await SendMessage(_connectedUsers[messageObject.AddresseeUser.Name], messageObject.Text);
+            // var message = $"{socketId} said {messageObject.Text}";
+            // Console.WriteLine(message);
         }
     }
 }

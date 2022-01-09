@@ -23,11 +23,12 @@ namespace Client.Services
             await _connectionManager.StartConnection();
         }
 
-        public void SendMessage(string message)
+        public void SendMessage(string message, User addresseeUser)
         {
             Message messageObject = new Message()
             {
                 Text = message,
+                AddresseeUser = addresseeUser,
                 Time = DateTime.Now,
             };
 
