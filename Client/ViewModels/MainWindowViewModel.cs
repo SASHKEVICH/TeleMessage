@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -23,6 +24,7 @@ namespace Client.ViewModels
         private MessageService _messageService;
         private string _connectionStatus = "You are not connected!";
         private bool _canClick;
+        private string _clientsNickname = "hey";
         
         public string ConnectionStatus
         {
@@ -48,23 +50,24 @@ namespace Client.ViewModels
             set => SetProperty(ref _canClick, value);
         }
 
+        public string ClientsNickname
+        {
+            get => _clientsNickname;
+            set => SetProperty(ref _clientsNickname, value);
+        }
+
         public DelegateCommand CommandSend =>
             _commandSend ??= new DelegateCommand(CommandSendMessageExecute);
         
         public DelegateCommand CommandReconnect =>
             _commandReconnect ??= new DelegateCommand(CommandReconnectExecute);
         
-        private void CommandSendMessageExecute()
+        private async void CommandSendMessageExecute()
         {
-            if (_messageTextToSend.Length != 0 || _messageTextToSend != null)
-            {
-                var user = new User
-                {
-                    Name = "User2",
-                };
-                
-                _messageService.SendMessage(_messageTextToSend, user);
-            }
+            if (string.IsNullOrEmpty(_messageTextToSend)) return;
+
+            await _messageService.SendMessage(_messageTextToSend, ClientsNickname); 
+            SetProperty(ref _connectionStatus, _messageService.RecievedMessage);
         }
         
         private async void CommandReconnectExecute()

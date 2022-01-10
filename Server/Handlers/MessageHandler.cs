@@ -26,24 +26,20 @@ namespace Server.Handlers
             var user = new User
             {
                 UserId = Guid.NewGuid(),
-                Name = $"User{_connectedUsers.Count}",
+                Nickname = $"User{_connectedUsers.Count}",
             };
 
-            _connectedUsers.TryAdd(user.Name, socket);
+            _connectedUsers.TryAdd(user.Nickname, socket);
             
-            Console.WriteLine($"Socket {user.Name} connected!");
+            Console.WriteLine($"Socket {user.Nickname} connected!");
         }
 
         public override async Task Recieve(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
-            var socketId = ConnectionManager.GetId(socket);
-            
             var messageString = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            var messageObject = JsonConvert.DeserializeObject<Message>(messageString);
-
-            await SendMessage(_connectedUsers[messageObject.AddresseeUser.Name], messageObject.Text);
-            // var message = $"{socketId} said {messageObject.Text}";
-            // Console.WriteLine(message);
+            // Console.WriteLine(messageString);
+            
+            await SendMessageToAll(messageString);
         }
     }
 }

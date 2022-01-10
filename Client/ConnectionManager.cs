@@ -3,6 +3,8 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Core;
+using Newtonsoft.Json;
 
 namespace Client
 {
@@ -19,9 +21,7 @@ namespace Client
         public async Task StartConnection()
         {
             _client = new ClientWebSocket();
-            
             await _client.ConnectAsync(new Uri($"ws://localhost:5000/{_api}"), CancellationToken.None);
-            
         }
     }
 }

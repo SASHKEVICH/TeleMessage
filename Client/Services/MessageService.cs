@@ -13,6 +13,8 @@ namespace Client.Services
         private const string Api = "message";
         private readonly ConnectionManager _connectionManager;
         
+        public string RecievedMessage { get; private set; }
+        
         public MessageService()
         {
             _connectionManager = new ConnectionManager(Api);
@@ -23,20 +25,39 @@ namespace Client.Services
             await _connectionManager.StartConnection();
         }
 
-        public void SendMessage(string message, User addresseeUser)
+        public async Task SendMessage(string message, string senderNickname)
         {
-            Message messageObject = new Message()
+            Message messageObject = new Message
             {
                 Text = message,
-                AddresseeUser = addresseeUser,
+                SenderNickname = senderNickname,
                 Time = DateTime.Now,
             };
 
             var jsonMessageObject = JsonConvert.SerializeObject(messageObject);
             var bytes = Encoding.UTF8.GetBytes(jsonMessageObject);
-            _connectionManager._client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
+            
+            await _connectionManager._client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
                 CancellationToken.None);
+            await RecieveMessageAsync();
         }
-        
+
+        private async Task RecieveMessageAsync()
+        {
+            var buffer = new byte[1024 * 4];
+
+            while (true)
+            {
+                var result = await _connectionManager._client.ReceiveAsync(new ArraySegment<byte>(buffer), 
+                    CancellationToken.None);
+
+                RecievedMessage = Encoding.UTF8.GetString(buffer);
+                
+                if (result.MessageType != WebSocketMessageType.Close && RecievedMessage == null) continue;
+                await _connectionManager._client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", 
+                    CancellationToken.None);
+                break;
+            }
+        }
     }
 }
