@@ -17,6 +17,7 @@ namespace Client
     {
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            containerRegistry.Register<Services.IMessageService, Services.MessageService>();
         }
 
         protected override Window CreateShell()

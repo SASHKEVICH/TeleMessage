@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Client.Services;
 using Core;
+using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Mvvm;
 
@@ -15,13 +14,15 @@ namespace Client.ViewModels
 
         public MainWindowViewModel()
         {
+            _messageService = new MessageService();
+            _messageService.OnMessageRecievedEvent += WriteMessageText;
         }
         
         private DelegateCommand _commandSend;
         private DelegateCommand _commandReconnect;
         
         private string _messageTextToSend;
-        private MessageService _messageService;
+        private readonly MessageService _messageService;
         private string _connectionStatus = "You are not connected!";
         private bool _canClick;
         private string _clientsNickname = "hey";
@@ -65,16 +66,13 @@ namespace Client.ViewModels
         private async void CommandSendMessageExecute()
         {
             if (string.IsNullOrEmpty(_messageTextToSend)) return;
-
-            await _messageService.SendMessage(_messageTextToSend, ClientsNickname); 
-            SetProperty(ref _connectionStatus, _messageService.RecievedMessage);
+            await _messageService.SendMessage(_messageTextToSend, ClientsNickname);
         }
         
         private async void CommandReconnectExecute()
         {
             try
             {
-                _messageService = new MessageService();
                 await _messageService.InitializeConnection();
             }
             catch (System.Net.WebSockets.WebSocketException)
@@ -84,6 +82,12 @@ namespace Client.ViewModels
             }
             CanClick = true;
             ConnectionStatus = "You are connected!";
+        }
+
+        private void WriteMessageText(string message)
+        {
+            Message messageObject = JsonConvert.DeserializeObject<Message>(message);
+            ConnectionStatus = messageObject.Text;
         }
     }
 }

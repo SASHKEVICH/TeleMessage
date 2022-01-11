@@ -42,7 +42,7 @@ namespace Server.SocketsManager
             await SendMessage(ConnectionManager.GetSocketById(id), message);
         }
 
-        public async Task SendMessageToAll(string message)
+        protected async Task SendMessageToAll(string message)
         {
             foreach (var connection in ConnectionManager.GetAllConnections())
             {

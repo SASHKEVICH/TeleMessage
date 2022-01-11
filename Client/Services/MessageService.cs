@@ -8,12 +8,14 @@ using Newtonsoft.Json;
 
 namespace Client.Services
 {
-    public class MessageService
+    public class MessageService : IMessageService
     {
         private const string Api = "message";
         private readonly ConnectionManager _connectionManager;
         
         public string RecievedMessage { get; private set; }
+        public event OnMessageRecieved OnMessageRecievedEvent;
+        public delegate void OnMessageRecieved(string message);
         
         public MessageService()
         {
@@ -44,14 +46,16 @@ namespace Client.Services
 
         private async Task RecieveMessageAsync()
         {
-            var buffer = new byte[1024 * 4];
+            var buffer = new byte[2048];
 
             while (true)
             {
                 var result = await _connectionManager._client.ReceiveAsync(new ArraySegment<byte>(buffer), 
                     CancellationToken.None);
 
-                RecievedMessage = Encoding.UTF8.GetString(buffer);
+                var jsonMessageString = Encoding.UTF8.GetString(buffer, 0, result.Count);
+
+                OnMessageRecievedEvent?.Invoke(jsonMessageString);
                 
                 if (result.MessageType != WebSocketMessageType.Close && RecievedMessage == null) continue;
                 await _connectionManager._client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", 
