@@ -9,11 +9,11 @@ namespace Server.SocketsManager
 {
     public abstract class SocketHandler
     {
-        public ConnectionManager ConnectionManager { get; set; }
+        private ConnectionManager ConnectionManager { get; }
 
         public SocketHandler(ConnectionManager connectionManager)
         {
-            this.ConnectionManager = connectionManager;
+            ConnectionManager = connectionManager;
         }
 
         public virtual async Task OnConnected(WebSocket socket)

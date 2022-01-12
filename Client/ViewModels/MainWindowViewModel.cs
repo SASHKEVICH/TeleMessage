@@ -65,7 +65,7 @@ namespace Client.ViewModels
         
         private async void CommandSendMessageExecute()
         {
-            if (string.IsNullOrEmpty(_messageTextToSend)) return;
+            if (string.IsNullOrWhiteSpace(_messageTextToSend)) return;
             await _messageService.SendMessage(_messageTextToSend, ClientsNickname);
         }
         
@@ -75,10 +75,14 @@ namespace Client.ViewModels
             {
                 await _messageService.InitializeConnection();
             }
-            catch (System.Net.WebSockets.WebSocketException)
+            catch (Exception ex)
             {
-                ConnectionStatus = "Server is not Online!";
-                return;
+                if (ex is System.Net.WebSockets.WebSocketException or System.Net.Http.HttpRequestException
+                    or System.Net.Sockets.SocketException)
+                {
+                    ConnectionStatus = "Server is not Online!";
+                    return;
+                }
             }
             CanClick = true;
             ConnectionStatus = "You are connected!";

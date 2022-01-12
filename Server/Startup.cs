@@ -26,7 +26,6 @@ namespace Server
             }
 
             app.UseWebSockets();
-
             app.MapSockets("/message", serviceProvider.GetService<MessageHandler>());
             app.UseStaticFiles();
         }

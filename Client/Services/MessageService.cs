@@ -12,8 +12,6 @@ namespace Client.Services
     {
         private const string Api = "message";
         private readonly ConnectionManager _connectionManager;
-        
-        public string RecievedMessage { get; private set; }
         public event OnMessageRecieved OnMessageRecievedEvent;
         public delegate void OnMessageRecieved(string message);
         
@@ -54,10 +52,9 @@ namespace Client.Services
                     CancellationToken.None);
 
                 var jsonMessageString = Encoding.UTF8.GetString(buffer, 0, result.Count);
-
                 OnMessageRecievedEvent?.Invoke(jsonMessageString);
                 
-                if (result.MessageType != WebSocketMessageType.Close && RecievedMessage == null) continue;
+                if (result.MessageType != WebSocketMessageType.Close) continue;
                 await _connectionManager._client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", 
                     CancellationToken.None);
                 break;

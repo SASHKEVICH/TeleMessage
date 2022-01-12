@@ -13,8 +13,10 @@ namespace Server.Handlers
 
     public class MessageHandler : SocketHandler
     {
+        private ApplicationContext.ChatContext _db;
         public MessageHandler(ConnectionManager connectionManager) : base(connectionManager)
         {
+            _db = new ApplicationContext.ChatContext();
         }
         
         private readonly ConcurrentDictionary<string, WebSocket> _connectedUsers = new();
@@ -37,9 +39,14 @@ namespace Server.Handlers
         public override async Task Recieve(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             var messageString = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            // Console.WriteLine(messageString);
+            var messageObject = JsonConvert.DeserializeObject<Message>(messageString);
+            messageObject.MessageId = Guid.NewGuid();
             
-            await SendMessageToAll(messageString);
+            _db.Add(messageObject);
+            _db.SaveChanges();
+
+            var replyMessageString = JsonConvert.SerializeObject(messageObject);
+            await SendMessageToAll(replyMessageString);
         }
     }
 }
