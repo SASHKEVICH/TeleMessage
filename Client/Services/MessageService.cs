@@ -63,20 +63,13 @@ namespace Client.Services
         public async Task RecieveMessageListAsync(List<Message> incomingMessages)
         {
             var buffer = new byte[4096];
+            
+            var result = await _connectionManager._client.ReceiveAsync(new ArraySegment<byte>(buffer), 
+                CancellationToken.None);
 
-            while (true)
-            {
-                var result = await _connectionManager._client.ReceiveAsync(new ArraySegment<byte>(buffer), 
-                    CancellationToken.None);
+            var jsonMessageListString = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            incomingMessages.AddRange(JsonConvert.DeserializeObject<List<Message>>(jsonMessageListString));
 
-                var jsonMessageListString = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                incomingMessages.AddRange(JsonConvert.DeserializeObject<List<Message>>(jsonMessageListString));
-
-                if (result.MessageType != WebSocketMessageType.Close) continue;
-                await _connectionManager._client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", 
-                    CancellationToken.None);
-                break;
-            }
         }
     }
 }
