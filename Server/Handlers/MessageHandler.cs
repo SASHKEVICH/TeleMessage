@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,16 +8,17 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Newtonsoft.Json;
 using Server.SocketsManager;
 using Core;
+using Server.ApplicationContext;
 
 namespace Server.Handlers
 {
 
     public class MessageHandler : SocketHandler
     {
-        private ApplicationContext.ChatContext _db;
+        private readonly Repository.Repository _repository;
         public MessageHandler(ConnectionManager connectionManager) : base(connectionManager)
         {
-            _db = new ApplicationContext.ChatContext();
+            _repository = new Repository.Repository();
         }
         
         private readonly ConcurrentDictionary<string, WebSocket> _connectedUsers = new();
@@ -32,6 +34,11 @@ namespace Server.Handlers
             };
 
             _connectedUsers.TryAdd(user.Nickname, socket);
+
+            var messagesList = _repository.GetMessageList().ToList();
+            var messageListString = JsonConvert.SerializeObject(messagesList, Formatting.Indented);
+
+            await SendMessage(socket, messageListString);
             
             Console.WriteLine($"Socket {user.Nickname} connected!");
         }
@@ -42,8 +49,8 @@ namespace Server.Handlers
             var messageObject = JsonConvert.DeserializeObject<Message>(messageString);
             messageObject.MessageId = Guid.NewGuid();
             
-            _db.Add(messageObject);
-            _db.SaveChanges();
+            _repository.Create(messageObject);
+            _repository.Save();
 
             var replyMessageString = JsonConvert.SerializeObject(messageObject);
             await SendMessageToAll(replyMessageString);

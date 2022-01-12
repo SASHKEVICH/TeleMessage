@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -39,10 +40,9 @@ namespace Client.Services
             
             await _connectionManager._client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
                 CancellationToken.None);
-            await RecieveMessageAsync();
         }
 
-        private async Task RecieveMessageAsync()
+        public async Task RecieveMessageAsync()
         {
             var buffer = new byte[2048];
 
@@ -54,6 +54,24 @@ namespace Client.Services
                 var jsonMessageString = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 OnMessageRecievedEvent?.Invoke(jsonMessageString);
                 
+                if (result.MessageType != WebSocketMessageType.Close) continue;
+                await _connectionManager._client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", 
+                    CancellationToken.None);
+                break;
+            }
+        }
+        public async Task RecieveMessageListAsync(List<Message> incomingMessages)
+        {
+            var buffer = new byte[4096];
+
+            while (true)
+            {
+                var result = await _connectionManager._client.ReceiveAsync(new ArraySegment<byte>(buffer), 
+                    CancellationToken.None);
+
+                var jsonMessageListString = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                incomingMessages.AddRange(JsonConvert.DeserializeObject<List<Message>>(jsonMessageListString));
+
                 if (result.MessageType != WebSocketMessageType.Close) continue;
                 await _connectionManager._client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", 
                     CancellationToken.None);

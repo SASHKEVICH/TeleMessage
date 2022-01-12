@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Client.Services;
@@ -11,7 +12,6 @@ namespace Client.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
-
         public MainWindowViewModel()
         {
             _messageService = new MessageService();
@@ -67,13 +67,16 @@ namespace Client.ViewModels
         {
             if (string.IsNullOrWhiteSpace(_messageTextToSend)) return;
             await _messageService.SendMessage(_messageTextToSend, ClientsNickname);
+            await _messageService.RecieveMessageAsync();
         }
         
         private async void CommandReconnectExecute()
         {
+            var incomingMessages = new List<Message>();
             try
             {
                 await _messageService.InitializeConnection();
+                await _messageService.RecieveMessageListAsync(incomingMessages);
             }
             catch (Exception ex)
             {
