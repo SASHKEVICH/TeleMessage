@@ -22,7 +22,7 @@
 
         <ContentControl Grid.Column="0" Grid.Row="0">
             <ContentControl.Content>
-                <ListView ItemsSource="{Binding IncomingMessages}" Margin="5"
+                <ListView ItemsSource="{Binding IncomingMessages}"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
@@ -59,37 +59,45 @@
         
         <Grid Grid.Row="0" Grid.Column="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             
-            <Button 
-                Grid.Row="0" Width="120" Height="40"
-                VerticalAlignment="Center" HorizontalAlignment="Center"
-                Command="{Binding CommandReconnect}"
-                Content="Reconnect to Server" 
-            /> 
-            <Button
-                Grid.Row="1" Width="80" Height="40"
-                IsEnabled="{Binding CanClick}"
-                VerticalAlignment="Center" HorizontalAlignment="Center"
-                Command="{Binding CommandSend}"
-                Content="Send Message"
-            />
+            <TextBox Grid.Row="2" Text="{Binding MessageTextToSend}"/>
+            
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBox Grid.Column="0" Height="40" Text="{Binding ClientsNickname}" />
+                <TextBlock Grid.Column="1" Text="{Binding ConnectionStatus}" HorizontalAlignment="Center"/>
+            </Grid>
         </Grid>
         
-        <TextBox Grid.Row="1" Grid.Column="0" Height="40" Text="{Binding MessageTextToSend}"/>
+        <Button Grid.Row="1" Grid.Column="1" Height="40"
+                Command="{Binding CommandDisconnect}" Content="Disconnect"/>
         
-        <Grid Grid.Row="1" Grid.Column="1">
+        <Grid Grid.Row="1" Grid.Column="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             
-            <TextBox Grid.Column="0" Height="40" Text="{Binding ClientsNickname}"/>
-            <TextBlock Grid.Column="1" Text="{Binding ConnectionStatus}"/>
-            <Button Grid.Column="2" Height="40" Command="{Binding CommandDisconnect}" Content="Disconnect"/>
+            <Button
+                Grid.Column="0" Height="40"
+                IsEnabled="{Binding CanClick}"
+                Command="{Binding CommandSend}"
+                Content="Send Message"
+            />
+            <Button 
+                Grid.Column="1" Height="40"
+                Command="{Binding CommandReconnect}"
+                Content="Reconnect to Server" 
+            /> 
+            
         </Grid>
     </Grid>
 </Window>

@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Mime;
-using System.Threading.Tasks;
 using System.Windows;
 using Client.Services;
 using Core;
@@ -86,9 +82,8 @@ namespace Client.ViewModels
             
             await _messageService.SendMessage(_messageTextToSend, ClientsNickname);
             
-            _messageTextToSend = "";
+            MessageTextToSend = "";
             
-            // await _messageService.RecieveMessageAsync();
         }
         
         private async void CommandReconnectExecute()
