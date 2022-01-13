@@ -44,13 +44,7 @@ namespace Client.ViewModels
         public string MessageTextToSend
         {
             get => _messageTextToSend;
-            set
-            {
-                if (SetProperty(ref _messageTextToSend, value))
-                {
-                    Debug.WriteLine(_messageTextToSend ?? "no message text has been typed");
-                }
-            }
+            set => SetProperty(ref _messageTextToSend, value);
         }
         
         private bool _canClick;

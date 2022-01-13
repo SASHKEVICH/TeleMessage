@@ -4,12 +4,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
+using NLog;
 
 namespace Server.SocketsManager
 {
     public abstract class SocketHandler
     {
         private ConnectionManager ConnectionManager { get; }
+        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public SocketHandler(ConnectionManager connectionManager)
         {
@@ -18,13 +20,14 @@ namespace Server.SocketsManager
 
         public virtual async Task OnConnected(WebSocket socket)
         {
+            _logger.Info($"{ConnectionManager.GetId(socket)} is connecting to server.");
             await Task.Run(() => { ConnectionManager.AddSocket(socket); });
         }
 
         public virtual async Task OnDisconnected(WebSocket socket)
         {
             await ConnectionManager.RemoveSocketAsync(ConnectionManager.GetId(socket));
-            Console.WriteLine($"{ConnectionManager.GetId(socket)} disconnected!");
+            _logger.Info($"{ConnectionManager.GetId(socket)} disconnected!");
         }
 
         public async Task SendMessage(WebSocket socket, string message)

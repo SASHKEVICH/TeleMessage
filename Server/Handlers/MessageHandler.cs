@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Newtonsoft.Json;
 using Server.SocketsManager;
 using Core;
-using Server.ApplicationContext;
+using NLog;
 
 namespace Server.Handlers
 {
@@ -16,6 +16,7 @@ namespace Server.Handlers
     public class MessageHandler : SocketHandler
     {
         private readonly Repository.Repository _repository;
+        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         public MessageHandler(ConnectionManager connectionManager) : base(connectionManager)
         {
             _repository = new Repository.Repository();
@@ -40,7 +41,7 @@ namespace Server.Handlers
 
             await SendMessage(socket, messageListString);
             
-            Console.WriteLine($"Socket {user.Nickname} connected!");
+            _logger.Debug($"Socket {user.Nickname} connected!");
         }
 
         public override async Task Recieve(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
@@ -53,6 +54,7 @@ namespace Server.Handlers
             _repository.Save();
 
             var replyMessageString = JsonConvert.SerializeObject(messageObject);
+            _logger.Debug($"Message sent to all in {messageObject.Time}");
             await SendMessageToAll(replyMessageString);
         }
     }

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Core;
 using Newtonsoft.Json;
+using NLog;
 
 namespace Client.Services
 {
@@ -14,6 +15,7 @@ namespace Client.Services
     {
         private const string Api = "message";
         private readonly ConnectionManager _connectionManager;
+        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         public event OnMessageRecieved OnMessageRecievedEvent;
         public delegate void OnMessageRecieved(string message);
         
@@ -24,11 +26,13 @@ namespace Client.Services
 
         public async Task InitializeConnection()
         {
+            _logger.Info("Client has started the connection.");
             await _connectionManager.StartConnection();
         }
 
         public async Task Disconnect()
         {
+            _logger.Info("Client has started the disconnection.");
             await _connectionManager.Disconnect();
         }
 
@@ -51,7 +55,7 @@ namespace Client.Services
             }
             catch (WebSocketException ex)
             {
-                Console.WriteLine($"Cannot send the message! {ex.Message}");
+                _logger.Warn($"Cannot send the message! {ex.Message}");
             }
         }
 
@@ -67,8 +71,6 @@ namespace Client.Services
                 OnMessageRecievedEvent?.Invoke(jsonMessageString);
                 
                 if (result.MessageType != WebSocketMessageType.Close) continue;
-                // await _connectionManager._client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", 
-                //     CancellationToken.None);
                 break;
             }
         }
