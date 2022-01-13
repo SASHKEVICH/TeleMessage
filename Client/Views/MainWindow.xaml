@@ -5,15 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
         xmlns:prism="http://prismlibrary.com/"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         prism:ViewModelLocator.AutoWireViewModel="True"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+    <!-- <i:Interaction.Triggers> -->
+    <!--     <i:EventTrigger EventName="ClosingWindow"> -->
+    <!--         <i:CallMethodAction MethodName="Close" /> -->
+    <!--     </i:EventTrigger> -->
+    <!-- </i:Interaction.Triggers> -->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="1*" />
@@ -50,11 +56,12 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             
             <TextBox Grid.Column="0" Height="40" Text="{Binding ClientsNickname}"/>
             <TextBlock Grid.Column="1" Text="{Binding ConnectionStatus}"/>
+            <Button Grid.Column="2" Height="40" Command="{Binding CommandDisconnect}" Content="Disconnect"/>
         </Grid>
-        
     </Grid>
 </Window>

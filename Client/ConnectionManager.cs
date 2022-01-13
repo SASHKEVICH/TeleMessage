@@ -21,7 +21,19 @@ namespace Client
         public async Task StartConnection()
         {
             _client = new ClientWebSocket();
-            await _client.ConnectAsync(new Uri($"ws://localhost:5000/{_api}"), CancellationToken.None);
+            try
+            {
+                await _client.ConnectAsync(new Uri($"ws://localhost:5000/{_api}"), CancellationToken.None);
+            }
+            catch (System.Net.WebSockets.WebSocketException ex)
+            {
+                throw new WebSocketException();
+            }
+        }
+
+        public async Task Disconnect()
+        {
+            await _client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
     }
 }

@@ -26,6 +26,11 @@ namespace Client.Services
             await _connectionManager.StartConnection();
         }
 
+        public async Task Disconnect()
+        {
+            await _connectionManager.Disconnect();
+        }
+
         public async Task SendMessage(string message, string senderNickname)
         {
             Message messageObject = new Message
@@ -37,9 +42,16 @@ namespace Client.Services
 
             var jsonMessageObject = JsonConvert.SerializeObject(messageObject);
             var bytes = Encoding.UTF8.GetBytes(jsonMessageObject);
-            
-            await _connectionManager._client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
-                CancellationToken.None);
+
+            try
+            {
+                await _connectionManager._client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
+                    CancellationToken.None);
+            }
+            catch (WebSocketException ex)
+            {
+                Console.WriteLine($"Cannot send the message! {ex.Message}");
+            }
         }
 
         public async Task RecieveMessageAsync()
@@ -69,7 +81,7 @@ namespace Client.Services
 
             var jsonMessageListString = Encoding.UTF8.GetString(buffer, 0, result.Count);
             incomingMessages.AddRange(JsonConvert.DeserializeObject<List<Message>>(jsonMessageListString));
-
         }
+        
     }
 }

@@ -24,6 +24,7 @@ namespace Server.SocketsManager
         public virtual async Task OnDisconnected(WebSocket socket)
         {
             await ConnectionManager.RemoveSocketAsync(ConnectionManager.GetId(socket));
+            Console.WriteLine($"{socket} disconnected!");
         }
 
         public async Task SendMessage(WebSocket socket, string message)

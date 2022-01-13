@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Client.Services;
 using Core;
@@ -20,13 +22,14 @@ namespace Client.ViewModels
         
         private DelegateCommand _commandSend;
         private DelegateCommand _commandReconnect;
+        private DelegateCommand _commandDisconnect;
         
         private string _messageTextToSend;
         private readonly MessageService _messageService;
         private string _connectionStatus = "You are not connected!";
         private bool _canClick;
         private string _clientsNickname = "hey";
-        
+
         public string ConnectionStatus
         {
             get => _connectionStatus;
@@ -62,7 +65,10 @@ namespace Client.ViewModels
         
         public DelegateCommand CommandReconnect =>
             _commandReconnect ??= new DelegateCommand(CommandReconnectExecute);
-        
+
+        public DelegateCommand CommandDisconnect =>
+            _commandDisconnect ??= new DelegateCommand(CommandDisconnectExecute);
+
         private async void CommandSendMessageExecute()
         {
             if (string.IsNullOrWhiteSpace(_messageTextToSend)) return;
@@ -80,8 +86,7 @@ namespace Client.ViewModels
             }
             catch (Exception ex)
             {
-                if (ex is System.Net.WebSockets.WebSocketException or System.Net.Http.HttpRequestException
-                    or System.Net.Sockets.SocketException)
+                if (ex is System.Net.WebSockets.WebSocketException)
                 {
                     ConnectionStatus = "Server is not Online!";
                     return;
@@ -90,7 +95,13 @@ namespace Client.ViewModels
             CanClick = true;
             ConnectionStatus = "You are connected!";
         }
-
+        
+        public async void CommandDisconnectExecute()
+        {
+            await _messageService.Disconnect();
+            ConnectionStatus = "You may close client!";
+        }
+        
         private void WriteMessageText(string message)
         {
             Message messageObject = JsonConvert.DeserializeObject<Message>(message);

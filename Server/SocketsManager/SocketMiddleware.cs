@@ -11,7 +11,7 @@ namespace Server.SocketsManager
     {
         private readonly RequestDelegate _next;
         
-        public SocketHandler Handler { get; set; }
+        private SocketHandler Handler { get; set; }
 
         public SocketMiddleware(RequestDelegate next, SocketHandler handler)
         {
