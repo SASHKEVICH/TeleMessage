@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -57,7 +58,6 @@ namespace Client.Services
         public async Task RecieveMessageAsync()
         {
             var buffer = new byte[2048];
-
             while (true)
             {
                 var result = await _connectionManager._client.ReceiveAsync(new ArraySegment<byte>(buffer), 
@@ -67,12 +67,12 @@ namespace Client.Services
                 OnMessageRecievedEvent?.Invoke(jsonMessageString);
                 
                 if (result.MessageType != WebSocketMessageType.Close) continue;
-                await _connectionManager._client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", 
-                    CancellationToken.None);
+                // await _connectionManager._client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", 
+                //     CancellationToken.None);
                 break;
             }
         }
-        public async Task RecieveMessageListAsync(List<Message> incomingMessages)
+        public async Task RecieveMessageListAsync(ObservableCollection<Message> incomingMessages)
         {
             var buffer = new byte[4096];
             
@@ -80,8 +80,7 @@ namespace Client.Services
                 CancellationToken.None);
 
             var jsonMessageListString = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            incomingMessages.AddRange(JsonConvert.DeserializeObject<List<Message>>(jsonMessageListString));
+            incomingMessages.AddRange(JsonConvert.DeserializeObject<ObservableCollection<Message>>(jsonMessageListString));
         }
-        
     }
 }

@@ -25,7 +25,7 @@ namespace Client
             {
                 await _client.ConnectAsync(new Uri($"ws://localhost:5000/{_api}"), CancellationToken.None);
             }
-            catch (System.Net.WebSockets.WebSocketException ex)
+            catch (WebSocketException)
             {
                 throw new WebSocketException();
             }
@@ -33,7 +33,8 @@ namespace Client
 
         public async Task Disconnect()
         {
-            await _client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+            await _client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", 
+                CancellationToken.None);
         }
     }
 }
