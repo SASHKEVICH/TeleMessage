@@ -24,7 +24,7 @@ namespace Server.SocketsManager
             await Task.Run(() => { ConnectionManager.AddSocket(socket); });
         }
 
-        public virtual async Task OnDisconnected(WebSocket socket)
+        public async Task OnDisconnected(WebSocket socket)
         {
             await ConnectionManager.RemoveSocketAsync(ConnectionManager.GetId(socket));
             _logger.Info($"{ConnectionManager.GetId(socket)} disconnected!");

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Authorization;
 using Newtonsoft.Json;
 using Server.SocketsManager;
 using Core;
