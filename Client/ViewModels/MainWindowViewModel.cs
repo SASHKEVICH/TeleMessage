@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using Client.Services;
@@ -117,7 +116,7 @@ namespace Client.ViewModels
         
         private void AddMessageToView(string message)
         {
-            Message messageObject = JsonConvert.DeserializeObject<Message>(message);
+            var messageObject = JsonConvert.DeserializeObject<Message>(message);
             IncomingMessages.Add(messageObject);
         }
     }

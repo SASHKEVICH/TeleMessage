@@ -14,11 +14,11 @@ namespace Server.Handlers
 
     public class MessageHandler : SocketHandler
     {
-        private readonly Repository.Repository _repository;
+        private readonly Repository.IRepository _repository;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        public MessageHandler(ConnectionManager connectionManager) : base(connectionManager)
+        public MessageHandler(ConnectionManager connectionManager, Repository.IRepository repository = null) : base(connectionManager)
         {
-            _repository = new Repository.Repository();
+            _repository = repository ?? new Repository.Repository();
         }
         
         private readonly ConcurrentDictionary<string, WebSocket> _connectedUsers = new();
