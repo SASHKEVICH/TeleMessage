@@ -6,22 +6,24 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Server.SocketsManager;
+using Server.DataBase;
 using Core;
 using NLog;
 
 namespace Server.Handlers
 {
-
     public class MessageHandler : SocketHandler
     {
-        private readonly Repository.IRepository _repository;
-        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        public MessageHandler(ConnectionManager connectionManager, Repository.IRepository repository = null) : base(connectionManager)
-        {
-            _repository = repository ?? new Repository.Repository();
-        }
+        private readonly IRepository _repository;
+        private readonly Logger _logger;
+        private readonly ConcurrentDictionary<string, WebSocket> _connectedUsers;
         
-        private readonly ConcurrentDictionary<string, WebSocket> _connectedUsers = new();
+        public MessageHandler(ConnectionManager connectionManager, IRepository repository = null) : base(connectionManager)
+        {
+            _repository = repository ?? new Repository();
+            _logger = LogManager.GetCurrentClassLogger();
+            _connectedUsers = new ConcurrentDictionary<string, WebSocket>();
+        }
 
         public override async Task OnConnected(WebSocket socket)
         {
@@ -30,7 +32,7 @@ namespace Server.Handlers
             var user = new User
             {
                 UserId = Guid.NewGuid(),
-                Nickname = $"User{_connectedUsers.Count}",
+                Nickname = $"User{_connectedUsers.Count}"
             };
 
             _connectedUsers.TryAdd(user.Nickname, socket);
@@ -40,7 +42,7 @@ namespace Server.Handlers
 
             await SendMessage(socket, messageListString);
             
-            _logger.Debug($"Socket {user.Nickname} connected!");
+            _logger.Debug(() => $"Socket {user.Nickname} connected!");
         }
 
         public override async Task Recieve(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
@@ -53,7 +55,7 @@ namespace Server.Handlers
             _repository.Save();
 
             var replyMessageString = JsonConvert.SerializeObject(messageObject);
-            _logger.Debug($"Message sent to all in {messageObject.Time}");
+            _logger.Debug(() => $"Message sent to all in {messageObject.Time}");
             await SendMessageToAll(replyMessageString);
         }
     }

@@ -4,61 +4,62 @@ using Core;
 using Microsoft.EntityFrameworkCore;
 using Server.ApplicationContext;
 
-namespace Server.Repository
+namespace Server.DataBase
 {
     public class Repository : IRepository
     {
-        public readonly ChatContext DB;
+        public readonly ChatContext DataBaseContext;
         private bool _disposed;
         public Repository()
         {
-            DB = new ChatContext();
+            DataBaseContext = new ChatContext();
             _disposed = false;
         }
 
         public IEnumerable<Message> GetMessageList()
         {
-            return DB.Messages;
+            return DataBaseContext.Messages;
         }
 
         public Message GetMessage(int id)
         {
-            return DB.Messages.Find(id);
+            return DataBaseContext.Messages.Find(id);
         }
 
         public void Create(Message message)
         {
-            DB.Messages.Add(message);
+            DataBaseContext.Messages.Add(message);
         }
 
         public void Update(Message message)
         {
-            DB.Entry(message).State = EntityState.Modified;
+            DataBaseContext.Entry(message).State = EntityState.Modified;
         }
 
         public void Delete(int id)
         {
-            Message message = DB.Messages.Find(id);
+            var message = DataBaseContext.Messages.Find(id);
             if (message != null)
             {
-                DB.Messages.Remove(message); 
+                DataBaseContext.Messages.Remove(message); 
             }
         }
 
         public void Save()
         {
-            DB.SaveChanges();
+            DataBaseContext.SaveChanges();
         }
         
-        public virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
                 if (disposing)
                 {
-                    DB.Dispose();
+                    DataBaseContext.Dispose();
                 }
             }
+            
             _disposed = true;
         }
  

@@ -14,30 +14,34 @@ namespace Client.Services
     {
         private const string Api = "message";
         private readonly ConnectionManager _connectionManager;
-        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private readonly Logger _logger;
+        private readonly int _bufferSize;
+        
         public event OnMessageRecieved OnMessageRecievedEvent;
         public delegate void OnMessageRecieved(string message);
         
         public MessageService()
         {
+            _bufferSize = 1024;
+            _logger = LogManager.GetCurrentClassLogger();
             _connectionManager = new ConnectionManager(Api);
         }
 
         public async Task InitializeConnection()
         {
-            _logger.Info("Client has started the connection.");
+            _logger.Info(() => "Client has started the connection.");
             await _connectionManager.StartConnection();
         }
 
         public async Task Disconnect()
         {
-            _logger.Info("Client has started the disconnection.");
+            _logger.Info(() => "Client has started the disconnection.");
             await _connectionManager.Disconnect();
         }
 
         public async Task SendMessage(string message, string senderNickname)
         {
-            Message messageObject = new Message
+            var messageObject = new Message
             {
                 Text = message,
                 SenderNickname = senderNickname,
@@ -60,7 +64,7 @@ namespace Client.Services
 
         public async Task RecieveMessageAsync()
         {
-            var buffer = new byte[2048];
+            var buffer = new byte[_bufferSize];
             while (true)
             {
                 var result = await _connectionManager._client.ReceiveAsync(new ArraySegment<byte>(buffer), 
@@ -75,7 +79,7 @@ namespace Client.Services
         }
         public async Task RecieveMessageListAsync(ObservableCollection<Message> incomingMessages)
         {
-            var buffer = new byte[4096];
+            var buffer = new byte[_bufferSize];
             
             var result = await _connectionManager._client.ReceiveAsync(new ArraySegment<byte>(buffer), 
                 CancellationToken.None);

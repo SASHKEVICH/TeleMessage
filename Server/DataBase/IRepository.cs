@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Core;
 
-namespace Server.Repository
+namespace Server.DataBase
 {
     public interface IRepository : IDisposable
     {

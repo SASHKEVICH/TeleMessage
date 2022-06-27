@@ -15,8 +15,8 @@ namespace Server.SocketsManager
 
         public SocketMiddleware(RequestDelegate next, SocketHandler handler)
         {
-            this._next = next;
-            this.Handler = handler;
+            _next = next;
+            Handler = handler;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -45,7 +45,9 @@ namespace Server.SocketsManager
 
         private async Task Receive(WebSocket socket, Action<WebSocketReceiveResult, byte[]> messageHandler)
         {
-            var buffer = new byte[1024 * 4];
+            const int bufferSize = 1024;
+            var buffer = new byte[bufferSize];
+            
             while (socket.State == WebSocketState.Open)
             {
                 var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
