@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Castle.Core.Internal;
 using Moq;
 using NUnit.Framework;
 using Server.Handlers;
-using Server.Repository;
 using Server.SocketsManager;
 using Core;
 using Newtonsoft.Json;
+using Server.DataBase;
 
 namespace Server.Tests
 {
@@ -28,7 +26,6 @@ namespace Server.Tests
             _connectionManager = new Mock<ConnectionManager>();
             _repository = new Mock<IRepository>();
             _messageHandler = new MessageHandler(_connectionManager.Object, _repository.Object);
-            
         }
         
         [Test]
@@ -56,7 +53,6 @@ namespace Server.Tests
             await _messageHandler.OnDisconnected(_clientWebSocket.Object);
         }
 
-        [Test]
         public async Task Recieve_SendMessageToAllCalled()
         {
             _clientWebSocket.Setup(x => x.State).Returns(WebSocketState.Open);
