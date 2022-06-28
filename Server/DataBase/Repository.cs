@@ -12,7 +12,11 @@ namespace Server.DataBase
         private bool _disposed;
         public Repository()
         {
-            DataBaseContext = new ChatContext();
+            using (var db = new ChatContext())
+            {
+                db.Database.Migrate();
+                DataBaseContext = db;
+            }
             _disposed = false;
         }
 
