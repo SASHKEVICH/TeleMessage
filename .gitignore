@@ -6,3 +6,5 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 *.db
+Server/chatContext.db-shm
+Server/chatContext.db-wal
