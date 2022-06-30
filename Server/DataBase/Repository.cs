@@ -9,20 +9,24 @@ namespace Server.DataBase
 {
     public class Repository : IRepository
     {
+        #region Fields
+        
         private ChatContext _dataBaseContext;
         private bool _disposed;
-        public Repository()
+        
+        #endregion
+
+        #region Constructor
+
+        public Repository(ChatContext chatContext)
         {
             _disposed = false;
+            _dataBaseContext = chatContext;
         }
 
-        public void Initialize(IServiceProvider serviceProvider)
-        {
-            using var context = new ChatContext(
-                serviceProvider.GetRequiredService<DbContextOptions<ChatContext>>());
-            _dataBaseContext = context;
-            context.Database.Migrate();
-        }
+        #endregion
+
+        #region Methods
 
         public IEnumerable<Message> GetMessageList()
         {
@@ -70,5 +74,8 @@ namespace Server.DataBase
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+        #endregion
+        
     }
 }

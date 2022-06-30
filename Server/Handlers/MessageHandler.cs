@@ -27,22 +27,7 @@ namespace Server.Handlers
 
         public override async Task OnConnected(WebSocket socket)
         {
-            await base.OnConnected(socket);
-
-            var user = new User
-            {
-                UserId = Guid.NewGuid(),
-                Nickname = $"User{_connectedUsers.Count}"
-            };
-
-            _connectedUsers.TryAdd(user.Nickname, socket);
-
-            var messagesList = _repository.GetMessageList().ToList();
-            var messageListString = JsonConvert.SerializeObject(messagesList, Formatting.Indented);
-
-            await SendMessage(socket, messageListString);
             
-            _logger.Debug(() => $"Socket {user.Nickname} connected!");
         }
 
         public override async Task OnDisconnected(WebSocket socket)
@@ -54,7 +39,7 @@ namespace Server.Handlers
             _connectedUsers.TryRemove(disconnectedUser);
         }
 
-        public override async Task Recieve(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
+        public async Task Recieve(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             var messageString = Encoding.UTF8.GetString(buffer, 0, result.Count);
             var messageObject = JsonConvert.DeserializeObject<Message>(messageString);

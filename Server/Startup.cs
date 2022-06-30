@@ -14,39 +14,54 @@ namespace Server
 {
     public class Startup
     {
-        private IConfiguration _configuration { get; set; }
+        #region Properties
+
+        private IConfiguration Configuration { get; }
+
+        #endregion
+
+        #region Constructor
 
         public Startup(IConfiguration configuration)
         {
-            _configuration = configuration;
+            Configuration = configuration;
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        #endregion
+
+        #region Methods
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddWebSocketManager();
             services.AddDbContext<ChatContext>(options =>
             {
-                options.UseSqlite(_configuration.GetConnectionString("ChatContext"));
+                options.UseSqlite(Configuration.GetConnectionString("ChatContext"));
             });
-            
+            services.AddScoped<IRepository, Repository>();
         }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
+            InitializeDatabase(app);
+            
             app.UseWebSockets();
+            app.MapSockets("/connecting", serviceProvider.GetService<ConnectionHanlder>());
             app.MapSockets("/message", serviceProvider.GetService<MessageHandler>());
             app.UseStaticFiles();
-
-            var repository = new Repository();
-            repository.Initialize(serviceProvider);
         }
+
+        private static void InitializeDatabase(IApplicationBuilder app)
+        {
+            using var scope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope();
+            scope.ServiceProvider.GetRequiredService<ChatContext>().Database.Migrate();
+        }
+
+        #endregion
     }
 }
