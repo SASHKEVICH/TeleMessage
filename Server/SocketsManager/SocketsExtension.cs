@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Server.Handlers;
+using Server.Services;
+using Server.SocketsMiddlewares;
 
 namespace Server.SocketsManager
 {
@@ -13,17 +14,17 @@ namespace Server.SocketsManager
             services.AddSingleton<ConnectionManager>();
             foreach (var type in Assembly.GetEntryAssembly().ExportedTypes)
             {
-                if (type.GetTypeInfo().BaseType == typeof(SocketHandler))
+                if (type.GetTypeInfo().BaseType == typeof(SocketService))
                 {
                     services.AddSingleton(type);
                 }
             }
-            
+
             return services;
         }
 
         public static IApplicationBuilder MapSockets(this IApplicationBuilder app, PathString path,
-            SocketHandler socket)
+            SocketService socket)
         {
             return app.Map(path, x => x.UseMiddleware<SocketMiddleware>(socket));
         }

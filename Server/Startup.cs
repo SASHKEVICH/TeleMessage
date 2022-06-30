@@ -7,8 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Server.ApplicationContext;
 using Server.DataBase;
-using Server.Handlers;
+using Server.Services;
 using Server.SocketsManager;
+using Server.SocketsMiddlewares;
 
 namespace Server
 {
@@ -34,6 +35,10 @@ namespace Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddWebSocketManager();
+
+            services.AddScoped<SocketService, MessageService>();
+            services.AddScoped<SocketService, ConnectionService>();
+            
             services.AddDbContext<ChatContext>(options =>
             {
                 options.UseSqlite(Configuration.GetConnectionString("ChatContext"));
@@ -51,8 +56,12 @@ namespace Server
             InitializeDatabase(app);
             
             app.UseWebSockets();
-            app.MapSockets("/connecting", serviceProvider.GetService<ConnectionHanlder>());
-            app.MapSockets("/message", serviceProvider.GetService<MessageHandler>());
+            app.Map("/connecting", x => 
+                x.UseMiddleware<ConnectionMiddleware>(serviceProvider.GetService<ConnectionService>()));
+            
+            app.Map("/message", x => 
+                x.UseMiddleware<MessageMiddleware>(serviceProvider.GetService<MessageService>()));
+            
             app.UseStaticFiles();
         }
 

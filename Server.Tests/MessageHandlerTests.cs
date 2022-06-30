@@ -4,11 +4,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
-using Server.Handlers;
 using Server.SocketsManager;
 using Core;
 using Newtonsoft.Json;
 using Server.DataBase;
+using Server.Services;
 
 namespace Server.Tests
 {
@@ -17,7 +17,7 @@ namespace Server.Tests
         private Mock<WebSocket> _clientWebSocket;
         private Mock<ConnectionManager> _connectionManager;
         private Mock<IRepository> _repository;
-        private MessageHandler _messageHandler;
+        private MessageService _messageHandler;
 
         [SetUp]
         public void Setup()
@@ -25,7 +25,7 @@ namespace Server.Tests
             _clientWebSocket = new Mock<WebSocket>();
             _connectionManager = new Mock<ConnectionManager>();
             _repository = new Mock<IRepository>();
-            _messageHandler = new MessageHandler(_connectionManager.Object, _repository.Object);
+            _messageHandler = new MessageService(_connectionManager.Object, _repository.Object);
         }
         
         [Test]
