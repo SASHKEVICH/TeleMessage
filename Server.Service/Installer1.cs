@@ -15,7 +15,7 @@ namespace Server.Service
 
             processInstaller.Account = ServiceAccount.LocalService;
             serviceInstaller.StartType = ServiceStartMode.Manual;
-            serviceInstaller.ServiceName = "Run_Telemessage_server_service";
+            serviceInstaller.ServiceName = "Run Telemessage server service";
             Installers.Add(processInstaller);
             Installers.Add(serviceInstaller);
         }

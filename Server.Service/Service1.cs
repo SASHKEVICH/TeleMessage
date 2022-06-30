@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.ServiceProcess;
 
@@ -14,12 +15,14 @@ namespace Server.Service
             InitializeComponent();
             CanStop = true;
             CanPauseAndContinue = true;
+            AutoLog = true;
 
             SetupProcess();
         }
 
         protected override void OnStart(string[] args)
         {
+            Debugger.Launch();
             _process = Process.Start(_processInfo);
         }
 
@@ -32,15 +35,19 @@ namespace Server.Service
 
         private void SetupProcess()
         {
-            var serverProcessPath = Path.Combine(Directory.GetCurrentDirectory(), "Server.exe");
-            _processInfo = new ProcessStartInfo(serverProcessPath);
-            _processInfo.UseShellExecute = false;
-            _processInfo.RedirectStandardOutput = true;
-            _processInfo.RedirectStandardError = true;
-            _processInfo.RedirectStandardInput = true;
-            _processInfo.CreateNoWindow = true;
-            _processInfo.ErrorDialog = false;
-            _processInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            var serverRelativePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @".\..\..\..\Server\bin\Debug\net6.0\Server.exe");
+            var serverProcessPath = Path.GetFullPath(serverRelativePath);
+
+            _processInfo = new ProcessStartInfo(serverProcessPath)
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                CreateNoWindow = true,
+                ErrorDialog = false,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
         }
     }
 }
