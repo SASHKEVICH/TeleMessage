@@ -2,65 +2,69 @@
 using System.Collections.Generic;
 using Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Server.ApplicationContext;
 
 namespace Server.DataBase
 {
     public class Repository : IRepository
     {
-        public readonly ChatContext DataBaseContext;
+        private ChatContext _dataBaseContext;
         private bool _disposed;
         public Repository()
         {
-            using (var db = new ChatContext())
-            {
-                db.Database.Migrate();
-                DataBaseContext = db;
-            }
             _disposed = false;
+        }
+
+        public void Initialize(IServiceProvider serviceProvider)
+        {
+            using var context = new ChatContext(
+                serviceProvider.GetRequiredService<DbContextOptions<ChatContext>>());
+            _dataBaseContext = context;
+            context.Database.Migrate();
         }
 
         public IEnumerable<Message> GetMessageList()
         {
-            return DataBaseContext.Messages;
+            return _dataBaseContext.Messages;
         }
 
         public Message GetMessage(int id)
         {
-            return DataBaseContext.Messages.Find(id);
+            return _dataBaseContext.Messages.Find(id);
         }
 
         public void Create(Message message)
         {
-            DataBaseContext.Messages.Add(message);
+            _dataBaseContext.Messages.Add(message);
         }
 
         public void Update(Message message)
         {
-            DataBaseContext.Entry(message).State = EntityState.Modified;
+            _dataBaseContext.Entry(message).State = EntityState.Modified;
         }
 
         public void Delete(int id)
         {
-            var message = DataBaseContext.Messages.Find(id);
+            var message = _dataBaseContext.Messages.Find(id);
             if (message != null)
             {
-                DataBaseContext.Messages.Remove(message); 
+                _dataBaseContext.Messages.Remove(message); 
             }
         }
 
         public void Save()
         {
-            DataBaseContext.SaveChanges();
+            _dataBaseContext.SaveChanges();
         }
         
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!_disposed)
             {
                 if (disposing)
                 {
-                    DataBaseContext.Dispose();
+                    _dataBaseContext.Dispose();
                 }
             }
             

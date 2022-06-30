@@ -35,7 +35,8 @@ namespace Server.Service
 
         private void SetupProcess()
         {
-            var serverRelativePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @".\..\..\..\Server\bin\Debug\net6.0\Server.exe");
+            var serverRelativePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                @".\..\..\..\Server\bin\Debug\net6.0\Server.exe");
             var serverProcessPath = Path.GetFullPath(serverRelativePath);
 
             _processInfo = new ProcessStartInfo(serverProcessPath)

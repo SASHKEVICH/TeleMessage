@@ -1,9 +1,5 @@
-﻿using System;
-using System.IO;
-using Core;
+﻿using Core;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Server.ApplicationContext
 {
@@ -11,21 +7,10 @@ namespace Server.ApplicationContext
     {
         public DbSet<Message> Messages { get; set; }
         public DbSet<User> Users { get; set; }
-        public string DbPath { get; }
 
-        public ChatContext()
+        public ChatContext(DbContextOptions<ChatContext> options)
+            : base(options)
         {
-            var settingsPath = Path.Combine(Directory.GetCurrentDirectory(), "settings.json");
-            
-            dynamic settingsObject = JObject.Parse(File.ReadAllText(settingsPath));
-            DbPath = Path.Combine(Directory.GetCurrentDirectory(), settingsObject.dbName.ToString());
-
-            Database.EnsureCreated();
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlite($"Data Source = {DbPath}");
         }
     }
 }
