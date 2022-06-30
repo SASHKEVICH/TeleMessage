@@ -45,6 +45,15 @@ namespace Server.Handlers
             _logger.Debug(() => $"Socket {user.Nickname} connected!");
         }
 
+        public override async Task OnDisconnected(WebSocket socket)
+        {
+            await base.OnDisconnected(socket);
+
+            var disconnectedUser = 
+                _connectedUsers.First(user => user.Value == socket);
+            _connectedUsers.TryRemove(disconnectedUser);
+        }
+
         public override async Task Recieve(WebSocket socket, WebSocketReceiveResult result, byte[] buffer)
         {
             var messageString = Encoding.UTF8.GetString(buffer, 0, result.Count);

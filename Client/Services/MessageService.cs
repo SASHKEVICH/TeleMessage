@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -29,23 +30,24 @@ namespace Client.Services
 
         public async Task InitializeConnection()
         {
-            _logger.Info(() => "Client has started the connection.");
+            _logger.Info(() => "Client has connected");
+            Debug.WriteLine(() => "Client has connected");
             await _connectionManager.StartConnection();
         }
 
         public async Task Disconnect()
         {
-            _logger.Info(() => "Client has started the disconnection.");
+            _logger.Info(() => "Client has disconnected");
+            Debug.WriteLine(() => "Client has disconnected");
             await _connectionManager.Disconnect();
         }
 
-        public async Task SendMessage(string message, string senderNickname)
+        public async Task SendMessage(string message)
         {
             var messageObject = new Message
             {
                 Text = message,
-                SenderNickname = senderNickname,
-                Time = DateTime.Now,
+                Time = DateTime.Now
             };
 
             var jsonMessageObject = JsonConvert.SerializeObject(messageObject);

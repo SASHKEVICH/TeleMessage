@@ -60,13 +60,7 @@ namespace Server.DataBase
         
         private void Dispose(bool disposing)
         {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    _dataBaseContext.Dispose();
-                }
-            }
+            if (!_disposed && disposing) _dataBaseContext.Dispose();
             
             _disposed = true;
         }

@@ -9,7 +9,12 @@ namespace Server.SocketsManager
 {
     public class ConnectionManager
     {
-        private ConcurrentDictionary<Guid, WebSocket> _connections = new ConcurrentDictionary<Guid, WebSocket>();
+        private ConcurrentDictionary<Guid, WebSocket> _connections;
+
+        public ConnectionManager()
+        {
+            _connections = new ConcurrentDictionary<Guid, WebSocket>();
+        }
 
         public WebSocket GetSocketById(Guid id)
         {

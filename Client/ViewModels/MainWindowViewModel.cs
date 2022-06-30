@@ -73,7 +73,7 @@ namespace Client.ViewModels
         {
             if (string.IsNullOrWhiteSpace(_messageTextToSend)) return;
             
-            await _messageService.SendMessage(_messageTextToSend, ClientsNickname);
+            await _messageService.SendMessage(_messageTextToSend);
             
             MessageTextToSend = "";
             

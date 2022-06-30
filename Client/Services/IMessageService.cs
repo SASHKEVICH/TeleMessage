@@ -5,6 +5,6 @@ namespace Client.Services
     public interface IMessageService
     {
         public Task InitializeConnection();
-        public Task SendMessage(string message, string senderNickname);
+        public Task SendMessage(string message);
     }
 }
