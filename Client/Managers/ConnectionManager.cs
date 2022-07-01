@@ -16,11 +16,11 @@ namespace Client.Managers
             _api = api;
         }
 
-        public async Task StartConnection()
+        public async Task StartConnection(string ip, string port)
         {
             try
             {
-                await Client.ConnectAsync(new Uri($"ws://localhost:5000/{_api}"), CancellationToken.None);
+                await Client.ConnectAsync(new Uri($"ws://{ip}:{port}/{_api}"), CancellationToken.None);
             }
             catch (WebSocketException)
             {

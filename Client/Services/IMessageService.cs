@@ -6,7 +6,7 @@ namespace Client.Services
 {
     public interface IMessageService
     {
-        public Task SendMessage(string messageText, MessageType type);
+        public void SendMessage(string messageText, MessageType type);
         public Task RecieveMessageAsync();
         public event MessageService.OnNewMessageRecieved OnNewMessageRecievedEvent;
         public event MessageService.OnInitialMessegesRecieved OnInitialMessegesRecievedEvent;

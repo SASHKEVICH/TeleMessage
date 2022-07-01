@@ -27,7 +27,7 @@ namespace Client.Services
 
         public MessageService(ClientWebSocket client)
         {
-            _bufferSize = 1024;
+            _bufferSize = 4096;
             _logger = LogManager.GetCurrentClassLogger();
             _client = client;
         }
@@ -55,7 +55,7 @@ namespace Client.Services
 
         #region Methods
         
-        public async Task SendMessage(string messageText, MessageType type)
+        public void SendMessage(string messageText, MessageType type)
         {
             var message = new Message();
             if (type == MessageType.Connecting)
@@ -83,7 +83,7 @@ namespace Client.Services
 
             try
             {
-                await _client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
+                _client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
                     CancellationToken.None);
             }
             catch (WebSocketException ex)
@@ -100,12 +100,15 @@ namespace Client.Services
                 var result = await _client.ReceiveAsync(new ArraySegment<byte>(buffer), 
                     CancellationToken.None);
 
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    await _client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    break;
+                }
+
                 var serverMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
                 IntepreteMessage(serverMessage);
-                
-                if (result.MessageType != WebSocketMessageType.Close) continue;
-                break;
             }
         }
 

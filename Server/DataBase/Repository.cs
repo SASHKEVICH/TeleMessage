@@ -22,6 +22,7 @@ namespace Server.DataBase
         {
             _disposed = false;
             _dataBaseContext = chatContext;
+            // ChatContextSeeder.Seed(_dataBaseContext);
         }
 
         #endregion

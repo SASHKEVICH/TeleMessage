@@ -62,11 +62,6 @@ public class ConnectionService : SocketService
         await RemoveDisconnectedUser(socket);
     }
 
-    public void PrepareConnectedUsers(ServerMessage serverMessage)
-    {
-        serverMessage.ConnectedUsers = ConnectedUsers();
-    }
-
     private User CreateUser()
     {
         var user = new User
@@ -81,9 +76,6 @@ public class ConnectionService : SocketService
     private async Task RemoveDisconnectedUser(WebSocket socket)
     {
         await ConnectionManager.RemoveSocketAsync(ConnectionManager.GetId(socket));
-        var disconnectedUser = 
-            ConnectionManager.GetAllConnections().First(user => user.Value == socket);
-        ConnectionManager.GetAllConnections().TryRemove(disconnectedUser);
     }
 
     #endregion
