@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Client.Managers;
 using Core;
 using Newtonsoft.Json;
 using NLog;
@@ -13,49 +14,76 @@ namespace Client.Services
 {
     public class MessageService : IMessageService
     {
-        private const string Api = "message";
-        private readonly ConnectionManager _connectionManager;
+        #region Fields
+        
         private readonly Logger _logger;
         private readonly int _bufferSize;
+        private readonly ClientWebSocket _client;
+
+        #endregion
         
-        public event OnMessageRecieved OnMessageRecievedEvent;
-        public delegate void OnMessageRecieved(string message);
-        
-        public MessageService()
+
+        #region Constructor
+
+        public MessageService(ClientWebSocket client)
         {
             _bufferSize = 1024;
             _logger = LogManager.GetCurrentClassLogger();
-            _connectionManager = new ConnectionManager(Api);
+            _client = client;
         }
 
-        public async Task InitializeConnection()
-        {
-            _logger.Info(() => "Client has connected");
-            Debug.WriteLine(() => "Client has connected");
-            await _connectionManager.StartConnection();
-        }
+        #endregion
 
-        public async Task Disconnect()
-        {
-            _logger.Info(() => "Client has disconnected");
-            Debug.WriteLine(() => "Client has disconnected");
-            await _connectionManager.Disconnect();
-        }
+        #region Events
 
-        public async Task SendMessage(string message)
+        public event OnNewMessageRecieved OnNewMessageRecievedEvent;
+        public delegate void OnNewMessageRecieved(object sender, Message message);
+
+        public event OnInitialMessegesRecieved OnInitialMessegesRecievedEvent;
+        public delegate void OnInitialMessegesRecieved(object sender, ObservableCollection<Message> messages);
+
+        public event OnInitialUsersListRecieved OnInitialUsersRecievedEvent;
+        public delegate void OnInitialUsersListRecieved(object sender, ObservableCollection<User> users);
+        
+        public event OnUserConnected OnUserConnectedEvent;
+        public delegate void OnUserConnected(object sender, User user);
+        
+        public event OnUserDisconnected OnUserDisonnectedEvent;
+        public delegate void OnUserDisconnected(object sender, User user);
+
+        #endregion
+
+        #region Methods
+        
+        public async Task SendMessage(string messageText, MessageType type)
         {
-            var messageObject = new Message
+            var message = new Message();
+            if (type == MessageType.Connecting)
             {
-                Text = message,
-                Time = DateTime.Now
+                message.User = new User
+                {
+                    Nickname = messageText
+                };
+            }
+            else
+            {
+                message.Text = messageText;
+            }
+
+            message.Time = DateTime.Now;
+
+            var serverMessage = new ServerMessage
+            {
+                Message = message,
+                Type = type,
             };
 
-            var jsonMessageObject = JsonConvert.SerializeObject(messageObject);
+            var jsonMessageObject = JsonConvert.SerializeObject(serverMessage);
             var bytes = Encoding.UTF8.GetBytes(jsonMessageObject);
 
             try
             {
-                await _connectionManager._client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
+                await _client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
                     CancellationToken.None);
             }
             catch (WebSocketException ex)
@@ -69,25 +97,45 @@ namespace Client.Services
             var buffer = new byte[_bufferSize];
             while (true)
             {
-                var result = await _connectionManager._client.ReceiveAsync(new ArraySegment<byte>(buffer), 
+                var result = await _client.ReceiveAsync(new ArraySegment<byte>(buffer), 
                     CancellationToken.None);
 
-                var jsonMessageString = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                OnMessageRecievedEvent?.Invoke(jsonMessageString);
+                var serverMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
+
+                IntepreteMessage(serverMessage);
                 
                 if (result.MessageType != WebSocketMessageType.Close) continue;
                 break;
             }
         }
-        public async Task RecieveMessageListAsync(ObservableCollection<Message> incomingMessages)
-        {
-            var buffer = new byte[_bufferSize];
-            
-            var result = await _connectionManager._client.ReceiveAsync(new ArraySegment<byte>(buffer), 
-                CancellationToken.None);
 
-            var jsonMessageListString = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            incomingMessages.AddRange(JsonConvert.DeserializeObject<ObservableCollection<Message>>(jsonMessageListString));
+        private void IntepreteMessage(string message)
+        {
+            var serverMessage = JsonConvert.DeserializeObject<ServerMessage>(message);
+            
+            switch (serverMessage?.Type)
+            {
+                case MessageType.NewMessage:
+                    OnNewMessageRecievedEvent?.Invoke(this, serverMessage.Message);
+                    break;
+                case MessageType.InitialMessage:
+                    var observableMessages = new ObservableCollection<Message>(serverMessage.InitialMessages);
+                    var observablesUsers = new ObservableCollection<User>(serverMessage.ConnectedUsers);
+                    observableMessages.OrderBy(x => x.Time);
+                    OnInitialMessegesRecievedEvent?.Invoke(this, observableMessages);
+                    OnInitialUsersRecievedEvent?.Invoke(this, observablesUsers);
+                    break;
+                case MessageType.UserConnected:
+                    var connectedUser = serverMessage.Message.User;
+                    OnUserConnectedEvent?.Invoke(this, connectedUser);
+                    break;
+                case MessageType.UserDisconnected:
+                    var disconnectedUser = serverMessage.Message.User;
+                    OnUserDisonnectedEvent?.Invoke(this, disconnectedUser);
+                    break;
+            }
         }
+
+        #endregion
     }
 }

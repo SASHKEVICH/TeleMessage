@@ -8,16 +8,16 @@ namespace Client.Managers
     public class ConnectionManager
     {
         private readonly string _api;
-        public ClientWebSocket Client { get; private set; }
+        public ClientWebSocket Client { get; }
 
         public ConnectionManager(string api)
         {
+            Client = new ClientWebSocket();
             _api = api;
         }
 
         public async Task StartConnection()
         {
-            Client = new ClientWebSocket();
             try
             {
                 await Client.ConnectAsync(new Uri($"ws://localhost:5000/{_api}"), CancellationToken.None);

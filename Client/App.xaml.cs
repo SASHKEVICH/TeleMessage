@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using Prism.Ioc;
 using Prism.Unity;
+using Client.Services;
 
 namespace Client
 {
@@ -17,7 +12,8 @@ namespace Client
     {
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.Register<Services.IMessageService, Services.MessageService>();
+            containerRegistry.Register<IMessageService, MessageService>();
+            containerRegistry.Register<IConnectionService, ConnectionService>();
         }
 
         protected override Window CreateShell()

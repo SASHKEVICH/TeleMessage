@@ -12,53 +12,85 @@ namespace Client.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
+        #region Constructor
+
         public MainWindowViewModel()
         {
-            _incomingMessages = new ObservableCollection<Message>();
-            _messageService = new MessageService();
-            _messageService.OnMessageRecievedEvent += AddMessageToView;
+            _connectionStatus = "You are not connected!";
+
+            _connectionService = new ConnectionService();
+            
+            _messageService = new MessageService(_connectionService.ConnectionManager.Client);
+            _messageService.OnNewMessageRecievedEvent += AddMessageToView;
+            _messageService.OnInitialMessegesRecievedEvent += AddInitialMessagesToView;
+            _messageService.OnInitialUsersRecievedEvent += AddInitialUsersToView;
+            _messageService.OnUserConnectedEvent += AddConnectedUser;
+            _messageService.OnUserDisonnectedEvent += RemoveDisconnectedUser;
         }
-        
+
+        #endregion
+
+        #region Fields
+
         private DelegateCommand _commandSend;
         private DelegateCommand _commandReconnect;
         private DelegateCommand _commandDisconnect;
         
-        private readonly MessageService _messageService;
+        private readonly IMessageService _messageService;
+        private readonly IConnectionService _connectionService;
+        
+        private bool _canClick;
+        private string _clientsNickname;
+        private string _messageTextToSend;
+        private string _connectionStatus;
 
         private ObservableCollection<Message> _incomingMessages;
+        private ObservableCollection<User> _connectedUsers;
+
+        #endregion
+
+        #region Properties
+
         public ObservableCollection<Message> IncomingMessages
         {
             get => _incomingMessages;
             set => SetProperty(ref _incomingMessages, value);
         }
         
-        private string _connectionStatus = "You are not connected!";
+        public ObservableCollection<User> ConnectedUsers
+        {
+            get => _connectedUsers;
+            set => SetProperty(ref _connectedUsers, value);
+        }
+
         public string ConnectionStatus
         {
             get => _connectionStatus;
             set => SetProperty(ref _connectionStatus, value);
         }
         
-        private string _messageTextToSend;
+        
         public string MessageTextToSend
         {
             get => _messageTextToSend;
             set => SetProperty(ref _messageTextToSend, value);
         }
         
-        private bool _canClick;
+        
         public bool CanClick
         {
             get => _canClick;
             set => SetProperty(ref _canClick, value);
         }
         
-        private string _clientsNickname;
+        
         public string ClientsNickname
         {
             get => _clientsNickname;
             set => SetProperty(ref _clientsNickname, value);
         }
+
+        #region DelegateCommands
 
         public DelegateCommand CommandSend =>
             _commandSend ??= new DelegateCommand(CommandSendMessageExecute);
@@ -69,14 +101,19 @@ namespace Client.ViewModels
         public DelegateCommand CommandDisconnect =>
             _commandDisconnect ??= new DelegateCommand(CommandDisconnectExecute);
 
+        #endregion
+        
+        #endregion
+        
+        #region Methods
+
         private async void CommandSendMessageExecute()
         {
             if (string.IsNullOrWhiteSpace(_messageTextToSend)) return;
             
-            await _messageService.SendMessage(_messageTextToSend);
+            await _messageService.SendMessage(_messageTextToSend, MessageType.NewMessage);
             
             MessageTextToSend = "";
-            
         }
         
         private async void CommandReconnectExecute()
@@ -89,35 +126,57 @@ namespace Client.ViewModels
 
             try
             {
-                await _messageService.InitializeConnection();
-                await _messageService.RecieveMessageListAsync(_incomingMessages);
-                
+                await _connectionService.InitializeConnection();
+                await _messageService.SendMessage(ClientsNickname, MessageType.Connecting);
+
                 CanClick = true;
                 ConnectionStatus = "You are connected!";
-                IncomingMessages = 
-                    new ObservableCollection<Message>(_incomingMessages.OrderBy(x => x.Time));
-                
+
                 await _messageService.RecieveMessageAsync();
             }
             catch (Exception ex)
             {
                 if (ex is System.Net.WebSockets.WebSocketException)
                 {
-                    ConnectionStatus = "Server is not Online!";
+                    ConnectionStatus = "Server is offline!";
                 }
+                Console.WriteLine(ex.StackTrace);
             }
         }
         
         private async void CommandDisconnectExecute()
         {
-            await _messageService.Disconnect();
-            ConnectionStatus = "You may close client!";
+            await _connectionService.Disconnect();
+            ConnectionStatus = "You have been disconnected";
         }
         
-        private void AddMessageToView(string message)
+        private void AddMessageToView(object sender, Message message)
         {
-            var messageObject = JsonConvert.DeserializeObject<Message>(message);
-            IncomingMessages.Add(messageObject);
+            IncomingMessages.Add(message);
         }
+        
+        private void AddInitialMessagesToView(object sender, ObservableCollection<Message> messages)
+        {
+            IncomingMessages = messages;
+        }
+        
+        private void AddInitialUsersToView(object sender, ObservableCollection<User> users)
+        {
+            ConnectedUsers = users;
+        }
+        
+        private void RemoveDisconnectedUser(object sender, User user)
+        {
+            ConnectedUsers.Remove(user);
+        }
+
+        private void AddConnectedUser(object sender, User user)
+        {
+            if (user.Nickname == ClientsNickname) return;
+            ConnectedUsers.Add(user);
+        }
+
+        #endregion
+        
     }
 }
