@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Windows;
 using Client.Services;
 using Core;
@@ -26,6 +27,9 @@ namespace Client.ViewModels
             _messageService.OnInitialUsersRecievedEvent += AddInitialUsersToView;
             _messageService.OnUserConnectedEvent += AddConnectedUser;
             _messageService.OnUserDisonnectedEvent += RemoveDisconnectedUser;
+
+            Ip = "localhost";
+            Port = "5000";
         }
 
         #endregion
@@ -43,6 +47,8 @@ namespace Client.ViewModels
         private string _clientsNickname;
         private string _messageTextToSend;
         private string _connectionStatus;
+        private string _ip;
+        private string _port;
 
         private ObservableCollection<Message> _incomingMessages;
         private ObservableCollection<User> _connectedUsers;
@@ -68,15 +74,25 @@ namespace Client.ViewModels
             get => _connectionStatus;
             set => SetProperty(ref _connectionStatus, value);
         }
+
+        public string Ip
+        {
+            get => _ip;
+            set => SetProperty(ref _ip, value);
+        }
         
+        public string Port
+        {
+            get => _port;
+            set => SetProperty(ref _port, value);
+        }
         
         public string MessageTextToSend
         {
             get => _messageTextToSend;
             set => SetProperty(ref _messageTextToSend, value);
         }
-        
-        
+
         public bool CanClick
         {
             get => _canClick;
@@ -107,11 +123,11 @@ namespace Client.ViewModels
         
         #region Methods
 
-        private async void CommandSendMessageExecute()
+        private void CommandSendMessageExecute()
         {
             if (string.IsNullOrWhiteSpace(_messageTextToSend)) return;
             
-            await _messageService.SendMessage(_messageTextToSend, MessageType.NewMessage);
+            _messageService.SendMessage(_messageTextToSend, MessageType.NewMessage);
             
             MessageTextToSend = "";
         }
@@ -126,13 +142,13 @@ namespace Client.ViewModels
 
             try
             {
-                await _connectionService.InitializeConnection();
-                await _messageService.SendMessage(ClientsNickname, MessageType.Connecting);
-
+                await _connectionService.InitializeConnection(Ip, Port);
+                _messageService.RecieveMessageAsync();
+                _messageService.SendMessage(ClientsNickname, MessageType.Connecting);
                 CanClick = true;
                 ConnectionStatus = "You are connected!";
-
-                await _messageService.RecieveMessageAsync();
+                
+                
             }
             catch (Exception ex)
             {
@@ -147,6 +163,7 @@ namespace Client.ViewModels
         private async void CommandDisconnectExecute()
         {
             await _connectionService.Disconnect();
+            _messageService.SendMessage("", MessageType.Disconnecting);
             ConnectionStatus = "You have been disconnected";
         }
         
