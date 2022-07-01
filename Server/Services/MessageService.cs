@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -46,7 +44,9 @@ namespace Server.Services
                 case MessageType.Connecting:
                 {
                     var user = serverMessage.Message.User;
-                    _repository.UpdateUser(user);
+                    user.UserId = ConnectionManager.GetGuidBySocket(socket);
+                    
+                    _repository.CreateUser(user);
                     _repository.Save();
                 
                     await SendMessageToAll(serverMessage, MessageType.UserConnected);

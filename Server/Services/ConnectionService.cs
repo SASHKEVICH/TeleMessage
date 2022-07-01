@@ -16,7 +16,6 @@ public class ConnectionService : SocketService
     #region Fields
 
     private readonly Logger _logger;
-    private readonly ConcurrentDictionary<Guid, WebSocket> _connectedUsers;
 
     #endregion
 
@@ -24,7 +23,7 @@ public class ConnectionService : SocketService
 
     private List<User> ConnectedUsers()
     {
-        var connectedUsersGuids = _connectedUsers.Keys.ToList();
+        var connectedUsersGuids = ConnectionManager.GetAllConnections().Keys.ToList();
         var connectedUsers = _repository.GetUsers(connectedUsersGuids);
 
         return connectedUsers;
@@ -38,7 +37,6 @@ public class ConnectionService : SocketService
         : base(connectionManager, repository)
     {
         _logger = LogManager.GetCurrentClassLogger();
-        _connectedUsers = new ConcurrentDictionary<Guid, WebSocket>();
     }
 
     #endregion
@@ -49,9 +47,7 @@ public class ConnectionService : SocketService
     {
         var user = CreateUser();
 
-        _connectedUsers.TryAdd(user.UserId, socket);
-        
-        await Task.Run(() => { ConnectionManager.AddSocket(socket); });
+        await Task.Run(() => { ConnectionManager.AddUser(user.UserId, socket); });
         
         Console.WriteLine($"{ConnectionManager.GetId(socket)} is connecting to server.");
         _logger.Info(() => $"{ConnectionManager.GetId(socket)} is connecting to server.");
@@ -76,12 +72,9 @@ public class ConnectionService : SocketService
         var user = new User
         {
             UserId = Guid.NewGuid(),
-            Nickname = $"User {_connectedUsers.Count}"
+            Nickname = $"User {ConnectionManager.GetAllConnections().Count}"
         };
 
-        _repository.CreateUser(user);
-        _repository.Save();
-        
         return user;
     }
     
@@ -89,8 +82,8 @@ public class ConnectionService : SocketService
     {
         await ConnectionManager.RemoveSocketAsync(ConnectionManager.GetId(socket));
         var disconnectedUser = 
-            _connectedUsers.First(user => user.Value == socket);
-        _connectedUsers.TryRemove(disconnectedUser);
+            ConnectionManager.GetAllConnections().First(user => user.Value == socket);
+        ConnectionManager.GetAllConnections().TryRemove(disconnectedUser);
     }
 
     #endregion

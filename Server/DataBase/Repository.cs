@@ -77,7 +77,7 @@ namespace Server.DataBase
         {
             var findingUser = GetUser(user.UserId);
 
-            if (findingUser == null) return;
+            if (findingUser != null) return;
             
             _dataBaseContext.Users.Add(user);
         }

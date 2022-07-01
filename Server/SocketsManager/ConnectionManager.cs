@@ -9,37 +9,42 @@ namespace Server.SocketsManager
 {
     public class ConnectionManager
     {
-        private ConcurrentDictionary<Guid, WebSocket> _connections;
+        private ConcurrentDictionary<Guid, WebSocket> _connectedUsers;
 
         public ConnectionManager()
         {
-            _connections = new ConcurrentDictionary<Guid, WebSocket>();
+            _connectedUsers = new ConcurrentDictionary<Guid, WebSocket>();
         }
 
         public WebSocket GetSocketById(Guid id)
         {
-            return _connections.FirstOrDefault(x => x.Key == id).Value;
+            return _connectedUsers.FirstOrDefault(x => x.Key == id).Value;
+        }
+        
+        public Guid GetGuidBySocket(WebSocket socket)
+        {
+            return _connectedUsers.FirstOrDefault(x => x.Value == socket).Key;
         }
 
         public ConcurrentDictionary<Guid, WebSocket> GetAllConnections()
         {
-            return _connections;
+            return _connectedUsers;
         }
 
         public Guid GetId(WebSocket socket)
         {
-            return _connections.FirstOrDefault(x => x.Value == socket).Key;
+            return _connectedUsers.FirstOrDefault(x => x.Value == socket).Key;
         }
 
         public async Task RemoveSocketAsync(Guid id)
         {
-            _connections.TryRemove(id, out var socket);
+            _connectedUsers.TryRemove(id, out var socket);
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Connection Closed", CancellationToken.None);
         }
 
-        public void AddSocket(WebSocket socket)
+        public void AddUser(Guid id, WebSocket socket)
         {
-            _connections.TryAdd(GetConnectionId(), socket);
+            _connectedUsers.TryAdd(id, socket);
         }
 
         private Guid GetConnectionId()
