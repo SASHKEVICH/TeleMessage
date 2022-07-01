@@ -1,4 +1,8 @@
 ﻿
+using System;
+using System.Collections.Generic;
+using System.Net.WebSockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Server.Services;
@@ -7,15 +11,67 @@ namespace Server.SocketsMiddlewares
 {
     public abstract class SocketMiddleware
     {
-        protected RequestDelegate _next;
-        private SocketService Handler { get; set; }
+        #region Fields
 
-        protected SocketMiddleware(RequestDelegate next, SocketService handler)
+        private readonly RequestDelegate _next;
+
+        #endregion
+
+        #region Properties
+
+        private ConnectionService ConnectionService { get; set; }
+        private MessageService MessageService { get; set; }
+
+        #endregion
+
+        #region Constructor
+
+        public SocketMiddleware(RequestDelegate next, ConnectionService connectionService, MessageService messageService)
         {
             _next = next;
-            Handler = handler;
+            ConnectionService = connectionService;
+            MessageService = messageService;
         }
 
-        public abstract Task InvokeAsync(HttpContext context, RequestDelegate next);
+        #endregion
+
+        #region Methods
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            if (!context.WebSockets.IsWebSocketRequest)
+            {
+                return;
+            }
+
+            var socket = await context.WebSockets.AcceptWebSocketAsync();
+            
+            await ConnectionService.OnConnected(socket);
+
+            await SendInitialDataToUser(socket);
+
+            await MessageReciever.Receive(socket, async (result, buffer) =>
+            {
+                switch (result.MessageType)
+                {
+                    case WebSocketMessageType.Text:
+                        await MessageService.Recieve(socket, result, buffer);
+                        break;
+                    case WebSocketMessageType.Close:
+                        await ConnectionService.OnDisconnected(socket);
+                        break;
+                }
+            });
+        }
+
+        private async Task SendInitialDataToUser(WebSocket socket)
+        {
+            var serverMessage = MessageService.PrepareInitialMessages();
+            ConnectionService.PrepareConnectedUsers(serverMessage);
+            
+            await MessageService.SendMessage(socket, serverMessage);
+        }
+
+        #endregion
     }
 }

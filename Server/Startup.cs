@@ -35,7 +35,7 @@ namespace Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddWebSocketManager();
-
+            
             services.AddScoped<SocketService, MessageService>();
             services.AddScoped<SocketService, ConnectionService>();
             
@@ -56,12 +56,8 @@ namespace Server
             InitializeDatabase(app);
             
             app.UseWebSockets();
-            app.Map("/connecting", x => 
-                x.UseMiddleware<ConnectionMiddleware>(serviceProvider.GetService<ConnectionService>()));
-            
-            app.Map("/message", x => 
-                x.UseMiddleware<MessageMiddleware>(serviceProvider.GetService<MessageService>()));
-            
+            app.MapSockets<SocketMiddleware>("/message", serviceProvider.GetService<MessageService>());
+            app.MapSockets<SocketMiddleware>("/message", serviceProvider.GetService<ConnectionService>());
             app.UseStaticFiles();
         }
 

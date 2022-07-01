@@ -23,10 +23,10 @@ namespace Server.SocketsManager
             return services;
         }
 
-        public static IApplicationBuilder MapSockets(this IApplicationBuilder app, PathString path,
+        public static IApplicationBuilder MapSockets<T>(this IApplicationBuilder app, PathString path,
             SocketService socket)
         {
-            return app.Map(path, x => x.UseMiddleware<SocketMiddleware>(socket));
+            return app.Map(path, x => x.UseMiddleware<T>(socket));
         }
     }
 }
