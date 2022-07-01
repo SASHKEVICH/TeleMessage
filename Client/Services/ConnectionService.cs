@@ -7,9 +7,9 @@ namespace Client.Services
 {
     public class ConnectionService : IConnectionService
     {
-        #region Fields
+        #region Properties
 
-        private readonly ConnectionManager _connectionManager;
+        public ConnectionManager ConnectionManager { get; }
 
         #endregion
 
@@ -18,7 +18,7 @@ namespace Client.Services
         public ConnectionService()
         {
             const string api = "message";
-            _connectionManager = new ConnectionManager(api);
+            ConnectionManager = new ConnectionManager(api);
         }
 
         #endregion
@@ -28,13 +28,13 @@ namespace Client.Services
         public async Task InitializeConnection()
         {
             Console.WriteLine(() => "Client has connected");
-            await _connectionManager.StartConnection();
+            await ConnectionManager.StartConnection();
         }
         
         public async Task Disconnect()
         {
             Debug.WriteLine(() => "Client has disconnected");
-            await _connectionManager.Disconnect();
+            await ConnectionManager.Disconnect();
         }
 
         #endregion

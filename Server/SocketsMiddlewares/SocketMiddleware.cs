@@ -10,7 +10,7 @@ using Server.Services;
 
 namespace Server.SocketsMiddlewares
 {
-    public abstract class SocketMiddleware
+    public class SocketMiddleware
     {
         #region Fields
 

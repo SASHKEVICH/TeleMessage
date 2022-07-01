@@ -60,9 +60,10 @@ public class ConnectionService : SocketService
 
     public async Task OnDisconnected(WebSocket socket)
     {
-        await RemoveDisconnectedUser(socket);
+        Console.WriteLine($"{ConnectionManager.GetId(socket)} disconnected.");
+        _logger.Info(() => $"{ConnectionManager.GetId(socket)} disconnected.");
         
-        _logger.Info(() => $"{ConnectionManager.GetId(socket)} disconnected!");
+        await RemoveDisconnectedUser(socket);
     }
 
     public void PrepareConnectedUsers(ServerMessage serverMessage)
