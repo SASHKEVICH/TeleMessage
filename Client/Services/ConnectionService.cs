@@ -25,10 +25,10 @@ namespace Client.Services
 
         #region Methods
 
-        public async Task InitializeConnection(string Ip, string Port)
+        public async Task InitializeConnection(string ip, string port)
         {
             Console.WriteLine(() => "Client has connected");
-            await ConnectionManager.StartConnection(Ip, Port);
+            await ConnectionManager.StartConnection(ip, port);
         }
         
         public async Task Disconnect()

@@ -46,10 +46,5 @@ namespace Server.SocketsManager
         {
             _connectedUsers.TryAdd(id, socket);
         }
-
-        private Guid GetConnectionId()
-        {
-            return Guid.NewGuid();
-        }
     }
 }

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Windows;
 using Client.Services;
 using Core;
-using Newtonsoft.Json;
 using Prism.Commands;
 using Prism.Mvvm;
 
