@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using NLog;
 using Server.DataBase;
 using Server.SocketsManager;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Server.Services
 {
@@ -26,6 +27,11 @@ namespace Server.Services
             : base(connectionManager, repository)
         {
             _logger = LogManager.GetCurrentClassLogger();
+            
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            };
         }
 
         #endregion
@@ -48,7 +54,10 @@ namespace Server.Services
                     
                     _repository.CreateUser(user);
                     _repository.Save();
-                
+
+                    var initialMessages = PrepareInitialMessages();
+
+                    await SendMessage(socket, initialMessages, initialMessages.Type);
                     await SendMessageToAll(serverMessage, MessageType.UserConnected);
                     return;
                 }
@@ -57,6 +66,8 @@ namespace Server.Services
                     return;
             }
             
+            var userId = ConnectionManager.GetGuidBySocket(socket);
+            serverMessage.Message.UserId = userId;
             _repository.CreateMessage(serverMessage.Message);
             _repository.Save();
             
@@ -72,9 +83,7 @@ namespace Server.Services
                 return;
             }
 
-            serverMessage.Type = serverMessage.Type != MessageType.NewMessage ? MessageType.NewMessage : type;
-
-            var message = MessageJsonConverter<ServerMessage>.SerializeMessage(serverMessage);
+            var message = JsonConvert.SerializeObject(serverMessage);
 
             await socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(message), 0, message.Length),
                 WebSocketMessageType.Text, true, CancellationToken.None);
@@ -88,13 +97,16 @@ namespace Server.Services
             }
         }
         
-        public ServerMessage PrepareInitialMessages()
+        private ServerMessage PrepareInitialMessages()
         {
             var messagesList = _repository.GetMessages().ToList();
+            var connectedUsersGuids = ConnectionManager.GetAllConnections().Keys.ToList();
+            var connectedUsers = _repository.GetUsers(connectedUsersGuids);
 
             var serverMessage = new ServerMessage
             {
                 InitialMessages = messagesList,
+                ConnectedUsers = connectedUsers,
                 Type = MessageType.InitialMessage,
             };
 

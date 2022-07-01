@@ -9,7 +9,7 @@ namespace Server.SocketsMiddlewares
     {
         public static async Task Receive(WebSocket socket, Action<WebSocketReceiveResult, byte[]> messageHandler)
         {
-            const int bufferSize = 1024;
+            const int bufferSize = 4096;
             var buffer = new byte[bufferSize];
             
             while (socket.State == WebSocketState.Open)

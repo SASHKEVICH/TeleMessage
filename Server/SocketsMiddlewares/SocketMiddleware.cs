@@ -48,9 +48,7 @@ namespace Server.SocketsMiddlewares
             var socket = await context.WebSockets.AcceptWebSocketAsync();
             
             await ConnectionService.OnConnected(socket);
-
-            await SendInitialDataToUser(socket);
-
+            
             await MessageReciever.Receive(socket, async (result, buffer) =>
             {
                 switch (result.MessageType)
@@ -63,14 +61,6 @@ namespace Server.SocketsMiddlewares
                         break;
                 }
             });
-        }
-
-        private async Task SendInitialDataToUser(WebSocket socket)
-        {
-            var serverMessage = MessageService.PrepareInitialMessages();
-            ConnectionService.PrepareConnectedUsers(serverMessage);
-            
-            await MessageService.SendMessage(socket, serverMessage, MessageType.InitialMessage);
         }
 
         #endregion

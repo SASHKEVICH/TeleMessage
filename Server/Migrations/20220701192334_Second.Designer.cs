@@ -11,8 +11,8 @@ using Server.ApplicationContext;
 namespace Server.Migrations
 {
     [DbContext(typeof(ChatContext))]
-    [Migration("20220630055355_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20220701192334_Second")]
+    partial class Second
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,11 +60,13 @@ namespace Server.Migrations
 
             modelBuilder.Entity("Core.Message", b =>
                 {
-                    b.HasOne("Core.User", null)
+                    b.HasOne("Core.User", "User")
                         .WithMany("Messages")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Core.User", b =>
