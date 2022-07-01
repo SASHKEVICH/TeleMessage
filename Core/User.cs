@@ -8,8 +8,8 @@ namespace Core
         [Key]
         public Guid UserId { get; set; }
         [Required]
-        public string Nickname { get; set; }
+        public string? Nickname { get; set; }
         
-        public ICollection<Message> Messages { get; set; }
+        public ICollection<Message>? Messages { get; set; }
     }
 }

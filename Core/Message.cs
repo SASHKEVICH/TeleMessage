@@ -7,12 +7,11 @@ namespace Core
     {
         [Key]
         public Guid MessageId { get; set; }
-        public string Text { get; set; }
+        public string? Text { get; set; }
         public DateTime Time { get; set; }
         
         [ForeignKey("User")]
         public Guid UserId { get; set; }
-        
-        public User User { get; set; }
+        public User? User { get; set; }
     }
 }
