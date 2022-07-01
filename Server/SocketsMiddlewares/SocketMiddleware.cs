@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Core;
 using Microsoft.AspNetCore.Http;
 using Server.Services;
 
@@ -69,7 +70,7 @@ namespace Server.SocketsMiddlewares
             var serverMessage = MessageService.PrepareInitialMessages();
             ConnectionService.PrepareConnectedUsers(serverMessage);
             
-            await MessageService.SendMessage(socket, serverMessage);
+            await MessageService.SendMessage(socket, serverMessage, MessageType.InitialMessage);
         }
 
         #endregion

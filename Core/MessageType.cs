@@ -4,6 +4,8 @@ namespace Core
     {
         InitialMessage,
         NewMessage,
+        UserConnected,
+        UserDisconnected,
         Disconnecting,
         Connecting
     }
