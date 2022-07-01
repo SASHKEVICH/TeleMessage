@@ -73,15 +73,49 @@
                 </Grid.ColumnDefinitions>
                 
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
                 <TextBox Grid.Row="0" Grid.Column="0" Height="40" Text="{Binding ClientsNickname}" />
                 <TextBox Grid.Row="1" Grid.Column="0" Height="40" Text="{Binding Ip}" />
                 <TextBox Grid.Row="2" Grid.Column="0" Height="40" Text="{Binding Port}" />
                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ConnectionStatus}" HorizontalAlignment="Center"/>
+                
+                <ContentControl Grid.Column="0" Grid.Row="3" Height="100">
+                    <ContentControl.Content>
+                        <ListView ItemsSource="{Binding ConnectedUsers}">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListBoxItem}">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                <ContentPresenter x:Name="contentPresenter" Content="{TemplateBinding Content}"
+                                              ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}" OpacityMask="{x:Null}"/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="WhiteSmoke" BorderThickness="0,0,0,1">
+                                        <DockPanel HorizontalAlignment="Stretch">
+                                            <DockPanel>
+                                                <TextBlock Padding="2" 
+                                                           Text="{Binding Nickname, StringFormat={}{0}}"
+                                                           FontWeight="Bold" DockPanel.Dock="Left"/>
+                                            </DockPanel>
+                                        </DockPanel>
+                                    </Border>
+                                    </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </ContentControl.Content>
+                </ContentControl>
             </Grid>
         </Grid>
         
