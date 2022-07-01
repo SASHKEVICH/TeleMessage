@@ -6,11 +6,16 @@ namespace Server.DataBase
 {
     public interface IRepository : IDisposable
     {
-        IEnumerable<Message> GetMessageList();
-        Message GetMessage(int id); 
-        void Create(Message message);
-        void Update(Message message);
-        void Delete(int id);
+        IEnumerable<Message> GetMessages();
+        Message GetMessage(Guid id); 
+        void CreateMessage(Message message);
+        void UpdateMessage(Message message);
+        void DeleteMessage(Guid id);
+        List<User> GetUsers(List<Guid> guids);
+        User GetUser(Guid id);
+        void CreateUser(User user);
+        void UpdateUser(User user);
+        void DeleteUser(Guid id);
         void Save();
     }
 }
