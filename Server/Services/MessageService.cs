@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 using NLog;
 using Server.DataBase;
 using Server.SocketsManager;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Server.Services
 {
@@ -83,6 +82,7 @@ namespace Server.Services
                 return;
             }
 
+            serverMessage.Type = type;
             var message = JsonConvert.SerializeObject(serverMessage);
 
             await socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(message), 0, message.Length),

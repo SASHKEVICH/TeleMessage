@@ -144,8 +144,6 @@ namespace Client.ViewModels
                 _messageService.SendMessage(ClientsNickname, MessageType.Connecting);
                 CanClick = true;
                 ConnectionStatus = "You are connected!";
-                
-                
             }
             catch (Exception ex)
             {

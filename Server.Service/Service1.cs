@@ -22,7 +22,6 @@ namespace Server.Service
 
         protected override void OnStart(string[] args)
         {
-            Debugger.Launch();
             _process = Process.Start(_processInfo);
         }
 
